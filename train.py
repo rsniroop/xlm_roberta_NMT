@@ -18,7 +18,7 @@ from model.xlmr_mt import XLMR_Encoder
 from utils.train_utils import add_xlmr_args
 from utils.data_utils import en_fr_processor, create_dataset, convert_examples_to_features
 
-from tqdm import tqdm_notebook as tqdm
+from tqdm.notebook import tqdm
 from tqdm import trange
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -74,7 +74,7 @@ def main():
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", len(train_examples))
     logger.info("  Batch size = %d", args.train_batch_size)
-    logger.info("  Num steps = %d", num_train_optimization_steps)
+    #logger.info("  Num steps = %d", num_train_optimization_steps)
 
     train_data = create_dataset(train_features)
 
@@ -102,7 +102,7 @@ def main():
             optimizer.step()
             scheduler.step()  # Update learning rate schedule
             model.zero_grad()
-            global_step += 1
+            #global_step += 1
             
 
     model.to(device)

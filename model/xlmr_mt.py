@@ -16,8 +16,8 @@ class XLMR_Encoder(nn.Module):
         self.device=device
 
     def forward(self, src_tensor):
-
-        transformer_out, _ = self.model(src_tensor, features_only=True)
+        #print(src_tensor)
+        transformer_out, _ = self.model(src_tensor)#, features_only=True)
 
         return transformer_out
 

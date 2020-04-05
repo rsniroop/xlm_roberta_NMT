@@ -3,6 +3,7 @@ import logging
 
 import torch 
 from torch.utils.data import TensorDataset
+from torch.nn.utils.rnn import pad_sequence
 
 class InputExample(object):
     """A single training/test example for simple sequence classification."""
@@ -37,8 +38,7 @@ class en_fr_processor:
 
     def get_train_examples(self, data_dir):
         """See base class."""
-        return self._create_examples(
-            self._read_file(data_dir))
+        return self._read_file(data_dir)
 
     def get_dev_examples(self, data_dir):
         """See base class."""
@@ -54,13 +54,15 @@ class en_fr_processor:
         '''
         read file
         '''
-        fr_file = open(os.path.join(data_dir, "news-commentary-v9.fr-en.fr"))
-        en_file = open(os.path.join(data_dir, "news-commentary-v9.fr-en.en"))
         data = []
 
-        for fr_sentence, en_sentence in zip(fr_file.readlines(), en_file.readlines()):
-            data.append([en_sentence, fr_sentence])
-        return data
+        with open(os.path.join(data_dir, "news-commentary-v9.fr-en.en")) as en_file, open(os.path.join(data_dir, "news-commentary-v9.fr-en.fr")) as fr_file:
+           for fr_sentence, en_sentence in zip(fr_file, en_file):
+             if fr_sentence and en_sentence:
+                data.append([en_sentence.strip(), fr_sentence.strip()])
+          
+        #print(data[:1000])
+        return data[:1000]
 
     def _create_examples(self, lines, set_type):
         examples = []
@@ -85,25 +87,29 @@ def convert_examples_to_features(examples,  max_seq_length, encode_method):
         token_ids = []
        
         for i, word in enumerate(example):  
-            tokens = encode_method(word.strip())  # word token ids   
-            token_ids.extend(tokens)  # all sentence token ids
+            tokens = encode_method(word.strip())
+            token_ids.append(tokens)# word token ids   
+            #token_ids.extend(tokens)  # all sentence token ids
 
+        if ex_index == 0:
+          logging.info("token ids = ")
+          logging.info(token_ids)
         logging.debug("token ids = ")
         logging.debug(token_ids)
 
-
-        features.append(
-            InputFeatures(input_ids=token_ids))
+        if token_ids:
+          features.append(
+              InputFeatures(input_ids=token_ids))
 
     return features
 
 
 def create_dataset(features):
-    
-    all_src_tensor = torch.tensor(
-        [f.src_tensor for f in features], dtype=torch.long)
-    all_target_tensor = torch.tensor(
-        [f.target_tensor for f in features], dtype=torch.long)
+    #print(f'src tensor : {features[1].src_tensor}')
+    all_src_tensor = [torch.tensor(f.src_tensor) for f in features]
+    all_target_tensor = [torch.tensor(f.target_tensor) for f in features]
 
+    all_src_tensor = pad_sequence(all_src_tensor, batch_first=True)
+    all_target_tensor = pad_sequence(all_target_tensor, batch_first=True)
     return TensorDataset(
         all_src_tensor, all_target_tensor)
