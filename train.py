@@ -14,7 +14,7 @@ from torch import nn
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
                               TensorDataset)
 
-from model.xlmr_mt import XLMR_Encoder
+from model.xlmr_mt import XLMR_Encoder, XLM_Decoder
 from utils.train_utils import add_xlmr_args
 from utils.data_utils import en_fr_processor, create_dataset, convert_examples_to_features
 

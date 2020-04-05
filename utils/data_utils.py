@@ -88,6 +88,8 @@ def convert_examples_to_features(examples,  max_seq_length, encode_method):
        
         for i, word in enumerate(example):  
             tokens = encode_method(word.strip())
+            tokens.insert(0, 1)
+            tokens.append(0)
             token_ids.append(tokens)# word token ids   
             #token_ids.extend(tokens)  # all sentence token ids
 
