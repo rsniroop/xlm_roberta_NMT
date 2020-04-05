@@ -37,7 +37,7 @@ class XLMR_Decoder(FairseqDecoder):
 
     def __init__(
         self, dictionary, encoder_hidden_dim=768, embed_dim=768, hidden_dim=768,
-        dropout=0.1,
+        dropout=0.1
     ):
         super().__init__(dictionary)
 
@@ -125,4 +125,4 @@ class XLMR_Encoder_Decoder():
     def __init__(self, enc_pretrained_path=None, hidden_size=768, dec_embed_dim = 768, dropout = 0.1, task = None, device = None):
 
         self.encoder = XLMR_Encoder(pretrained_path=enc_pretrained_path, hidden_size=hidden_size, dropout_p = dropout)
-        self.decoder = XLMR_Decoder()
+        self.decoder = XLMR_Decoder(self.task.target_dictionary)

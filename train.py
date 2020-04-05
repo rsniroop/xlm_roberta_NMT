@@ -51,13 +51,14 @@ def main():
     device = 'cuda' if (torch.cuda.is_available() and not args.no_cuda) else 'cpu'
 
     # creating model
-    model = XLMR_Encoder(pretrained_path=args.pretrained_path,
+    model = XLMR_Encoder_Decoder(pretrained_path=args.pretrained_path,
                     hidden_size=hidden_size,
                     dropout_p=args.dropout, device=device)
 
-    model.to(device)
+    model.encoder.to(device)
+    model.decoder.to(device)
     
-    params = model.named_parameters()
+    params = model.encoder.named_parameters() + model.decoder.named_parameters()
 
     optimizer_grouped_parameters = [
         {'params': [p for n, p in params]}
@@ -69,7 +70,7 @@ def main():
         optimizer, warmup_steps=1, t_total=1)
 
     train_features = convert_examples_to_features(
-        train_examples, args.max_seq_length, model.encode_word)
+        train_examples, args.max_seq_length, model.encoder.encode_word)
 
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", len(train_examples))
@@ -89,23 +90,28 @@ def main():
 
         tbar = tqdm(train_dataloader, desc="Iteration")
             
-        model.train()
+        model.encoder.train()
+        model.decoder.train()
         for step, batch in enumerate(tbar):
             batch = tuple(t.to(device) for t in batch)
             src_tensor, target_tensor = batch
-            enc_out = model(src_tensor)
-
+            enc_out = model.encoder(src_tensor)
+            dec_out = model.decoder(target_tensor, enc_out)
             torch.nn.utils.clip_grad_norm_(
-                model.parameters(), args.max_grad_norm)
+                model.encoder.parameters(), args.max_grad_norm)
+            torch.nn.utils.clip_grad_norm_(
+                model.decoder.parameters(), args.max_grad_norm)
 
 
             optimizer.step()
             scheduler.step()  # Update learning rate schedule
-            model.zero_grad()
+            model.encoder.zero_grad()
+            model.decoder.zero_grad()
             #global_step += 1
             
 
-    model.to(device)
+    model.encoder.to(device)
+    model.decoder.to(device)
 
 if __name__ == "__main__":
     main()
