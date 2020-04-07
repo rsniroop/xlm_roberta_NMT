@@ -91,27 +91,20 @@ def main():
         tbar = tqdm(train_dataloader, desc="Iteration")
             
         model.encoder.train()
-        model.decoder.train()
         for step, batch in enumerate(tbar):
             batch = tuple(t.to(device) for t in batch)
             src_tensor, target_tensor = batch
             enc_out = model.encoder(src_tensor)
-            dec_out = model.decoder(target_tensor, enc_out)
             torch.nn.utils.clip_grad_norm_(
                 model.encoder.parameters(), args.max_grad_norm)
-            torch.nn.utils.clip_grad_norm_(
-                model.decoder.parameters(), args.max_grad_norm)
 
 
             optimizer.step()
             scheduler.step()  # Update learning rate schedule
             model.encoder.zero_grad()
-            model.decoder.zero_grad()
-            #global_step += 1
             
 
     model.encoder.to(device)
-    model.decoder.to(device)
 
 if __name__ == "__main__":
     main()

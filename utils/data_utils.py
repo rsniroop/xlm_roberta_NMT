@@ -5,27 +5,6 @@ import torch
 from torch.utils.data import TensorDataset
 from torch.nn.utils.rnn import pad_sequence
 
-class InputExample(object):
-    """A single training/test example for simple sequence classification."""
-
-    def __init__(self, guid, text_a, text_b=None, label=None):
-        """Constructs a InputExample.
-
-        Args:
-            guid: Unique id for the example.
-            text_a: string. The untokenized text of the first sequence. For single
-            sequence tasks, only this sequence must be specified.
-            text_b: (Optional) string. The untokenized text of the second sequence.
-            Only must be specified for sequence pair tasks.
-            label: (Optional) string. The label of the example. This should be
-            specified for train and dev examples, but not for test examples.
-        """
-        self.guid = guid
-        self.text_a = text_a
-        self.text_b = text_b
-        self.label = label
-
-
 class InputFeatures(object):
 
     def __init__(self, input_ids):
@@ -34,21 +13,10 @@ class InputFeatures(object):
 
 
 class en_fr_processor:
-    """Processor for the CoNLL-2003 data set."""
-
     def get_train_examples(self, data_dir):
         """See base class."""
         return self._read_file(data_dir)
 
-    def get_dev_examples(self, data_dir):
-        """See base class."""
-        return self._create_examples(
-            self._read_file(os.path.join(data_dir, "valid.txt")), "valid")
-
-    def get_test_examples(self, data_dir):
-        """See base class."""
-        return self._create_examples(
-            self._read_file(os.path.join(data_dir, "test.txt")), "test")
 
     def _read_file(self, data_dir):
         '''
@@ -63,19 +31,6 @@ class en_fr_processor:
           
         #print(data[:1000])
         return data[:1000]
-
-    def _create_examples(self, lines, set_type):
-        examples = []
-
-        for i, (sentence, label) in enumerate(lines):
-            guid = "%s-%s" % (set_type, i)
-            text_a = ' '.join(sentence)
-            text_b = None
-            label = label
-            examples.append(InputExample(
-                guid=guid, text_a=text_a, text_b=text_b, label=label))
-        return examples
-
 
 def convert_examples_to_features(examples,  max_seq_length, encode_method):
     features = []
